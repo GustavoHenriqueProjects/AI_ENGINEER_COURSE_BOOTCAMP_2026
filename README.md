@@ -27,3 +27,14 @@ Este é um repositório de estudos pessoal. Sinta-se à vontade para fazer fork 
 ## 📝 Licença
 
 Este projeto é para fins educacionais.
+
+## Estrutura do projeto
+ChatBot/
+├── app.py              # Só UI e fluxo do chat (~55 linhas)
+├── config.py           # Constantes e system prompt
+├── services/
+│   ├── __init__.py     # Expõe transcrever_audio e stream_chat_generator
+│   ├── transcriber.py  # Whisper (transcrição de áudio)
+│   └── llm.py          # Cliente OpenAI/Ollama e stream do chat
+├── requirements.txt
+└── tools.txt

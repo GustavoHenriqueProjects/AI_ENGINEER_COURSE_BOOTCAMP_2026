@@ -22,3 +22,9 @@ pip install openai
 
 #Para usar o OLLAMA instale e execute no terminal:
 & "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe" run llama3.2:1b
+
+#Para comunicação por audio:
+pip install faster-whisper
+
+#Para treinamento com o PDF
+pip install langchain langchain-community pypdf chromadb
