@@ -1,0 +1,24 @@
+Lesson 65 and 66 para criação de ChatBot
+
+Lang Chain
+Streamlit
+
+Versão a ser usada: pyenv install 3.12.2
+
+# Cria o ambiente chamado 'chatbot' com uma versão estável do Python
+conda create --name chatbot python=3.12.2
+
+# Ativa o ambiente
+conda activate chatbot
+
+#Streamlit => Transforma scripts python em aplicativos web em minutos
+conda install -c conda-forge streamlit ou pip install streamlit
+
+#Para usar o Streamlit:
+streamlit run app.py
+
+#OPENAI_API
+pip install openai
+
+#Para usar o OLLAMA instale e execute no terminal:
+& "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe" run llama3.2:1b
