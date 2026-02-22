@@ -1,0 +1,2 @@
+# Coloque aqui os PDFs da empresa para o RAG.
+# Depois rode: python build_rag.py

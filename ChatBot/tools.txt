@@ -20,11 +20,20 @@ streamlit run app.py
 #OPENAI_API
 pip install openai
 
-#Para usar o OLLAMA instale e execute no terminal:
-& "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe" run llama3.2:1b
+# Para usar o Ollama (modelo de chat): use um dos comandos abaixo (funciona no cmd e no PowerShell)
+ollama run llama3.2:1b
+ollama run llama3.2:3b
+ollama run llama3.1:8b
+ollama run deepseek-r1
 
 #Para comunicação por audio:
 pip install faster-whisper
 
-#Para treinamento com o PDF
-pip install langchain langchain-community pypdf chromadb
+#Para treinamento com o PDF (RAG)
+pip install -r requirements.txt
+ollama pull nomic-embed-text   # modelo de embeddings (só baixa; não precisa "rodar" no terminal)
+# Coloque os PDFs da empresa em ChatBot/data/pdf/
+# Indexe uma vez (ou só quando adicionar/trocar PDFs ou mudar de máquina; não precisa ao trocar de ambiente):
+cd ChatBot
+python build_rag.py
+streamlit run app.py

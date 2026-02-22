@@ -1,0 +1,15 @@
+# Identidade visual Brain4care — cores do site
+# Azul escuro (navy), ciano/teal e branco
+
+[theme]
+primaryColor = "#2EC5D3"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F9FA"
+textColor = "#0A3572"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
