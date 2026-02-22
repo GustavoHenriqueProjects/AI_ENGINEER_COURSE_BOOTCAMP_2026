@@ -3,10 +3,35 @@
 import base64
 import os
 import re
+import sys
+import time
+from pathlib import Path
+
+# Garante que o diretório ChatBot está no path (para imports de config e services)
+_chatbot_dir = Path(__file__).resolve().parent
+if str(_chatbot_dir) not in sys.path:
+    sys.path.insert(0, str(_chatbot_dir))
+
 import streamlit as st
 
-from config import MODEL, SYSTEM_PROMPT, GREETING_RESPONSE, FAQ_RESPOSTAS, LOGO_PATH, BACKGROUND_PATH
+
+def _stream_text(text: str, delay_per_word: float = 0.03):
+    """Gera o texto palavra por palavra para efeito de digitação."""
+    words = text.split()
+    for i, w in enumerate(words):
+        yield w + (" " if i < len(words) - 1 else "")
+        time.sleep(delay_per_word)
+
+import config as _config
+MODEL = _config.MODEL
+SYSTEM_PROMPT = _config.SYSTEM_PROMPT
+GREETING_RESPONSE = _config.GREETING_RESPONSE
+FAQ_RESPOSTAS = _config.FAQ_RESPOSTAS
+FALLBACK_SUPPORT_MSG = getattr(_config, "FALLBACK_SUPPORT_MSG", "No momento não consegui processar sua solicitação. Por favor, entre em contato com o suporte técnico da Brain4care para obter a informação desejada.")
+LOGO_PATH = _config.LOGO_PATH
+BACKGROUND_PATH = _config.BACKGROUND_PATH
 from services import transcrever_audio, stream_chat_generator, get_relevant_context
+from services.rag import is_composition_question, is_person_question, is_year_question
 
 
 # Palavras ignoradas na hora de casar pergunta do usuário com o FAQ
@@ -208,36 +233,60 @@ if user_message:
         st.write(user_message)
 
     with st.chat_message("assistant"):
-        # Saudações: resposta fixa na hora (inclui "Bom dia, meu nome é X")
+        # Saudações: resposta fixa com efeito de digitação
         if _is_simple_greeting(user_message):
             response = _greeting_response_with_name(user_message)
-            st.write(response)
-        # Perguntas do FAQ: resposta na hora, sem RAG nem LLM
+            response = st.write_stream(_stream_text(response))
+        # Perguntas do FAQ: resposta com efeito de digitação (mantém padrão do LLM)
         elif (faq_answer := _get_faq_answer(user_message)):
-            response = faq_answer
-            st.write(response)
+            response = st.write_stream(_stream_text(faq_answer))
         else:
             with st.spinner("Pensando ..."):
-                messages = [
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ]
-                # RAG: injeta contexto dos PDFs da empresa só nesta chamada
-                context = get_relevant_context(user_message)
-                if context:
-                    # Inclui FAQ no contexto para o modelo usar telefone, endereço, CEO etc.
-                    full_context = FAQ_RESPOSTAS.strip() + "\n\n---\n\n" + context
-                    augmented = (
-                        "Responda com base no contexto abaixo (perguntas frequentes e material da empresa). "
-                        "Se a informação estiver no contexto, use-a na resposta. "
-                        "Se NÃO estiver no contexto, diga que você não tem essa informação e oriente o usuário a entrar em contato com o suporte técnico. "
-                        "Não invente informações.\n\n"
-                        f"Contexto da empresa:\n\n{full_context}\n\n"
-                        f"Pergunta do usuário: {user_message}"
-                    )
-                    messages_for_llm = messages[:-1] + [{"role": "user", "content": augmented}]
-                else:
-                    messages_for_llm = messages
-                stream = stream_chat_generator(st.session_state.openai_model, messages_for_llm)
-                response = st.write_stream(stream)
+                try:
+                    messages = [
+                        {"role": m["role"], "content": m["content"]}
+                        for m in st.session_state.messages
+                    ]
+                    # RAG: injeta contexto dos PDFs da empresa só nesta chamada
+                    context = get_relevant_context(user_message)
+                    if context:
+                        if is_composition_question(user_message):
+                            full_context = context
+                            augmented = (
+                                "Liste TODOS os nomes e cargos que constam no contexto abaixo. Não omita nenhum.\n\n"
+                                f"Contexto:\n\n{full_context}\n\n"
+                                f"Pergunta: {user_message}"
+                            )
+                        elif is_person_question(user_message):
+                            augmented = (
+                                "Use APENAS o contexto abaixo. Responda no formato 'Nome — Cargo' com os cargos que aparecem no contexto. "
+                                "Se a pessoa aparece em mais de um lugar (ex.: Diretoria e Conselho), cite TODOS os cargos. "
+                                "Não use informações de outras fontes.\n\n"
+                                f"Contexto:\n\n{context}\n\n"
+                                f"Pergunta: {user_message}"
+                            )
+                        elif is_year_question(user_message):
+                            augmented = (
+                                "Use APENAS o contexto abaixo. Responda com a informação exata que consta no contexto sobre o ano mencionado. "
+                                "Não invente nem use informações de outras fontes. Se o contexto não mencionar o ano, diga que não tem essa informação.\n\n"
+                                f"Contexto:\n\n{context}\n\n"
+                                f"Pergunta: {user_message}"
+                            )
+                        else:
+                            full_context = FAQ_RESPOSTAS.strip() + "\n\n---\n\n" + context
+                            augmented = (
+                                "Responda com base no contexto abaixo (perguntas frequentes e material da empresa). "
+                                "Se a informação estiver no contexto, use-a na resposta. "
+                                "Se NÃO estiver no contexto, diga que você não tem essa informação e oriente o usuário a entrar em contato com o suporte técnico. "
+                                "Não invente informações.\n\n"
+                                f"Contexto da empresa:\n\n{full_context}\n\n"
+                                f"Pergunta do usuário: {user_message}"
+                            )
+                        messages_for_llm = messages[:-1] + [{"role": "user", "content": augmented}]
+                    else:
+                        messages_for_llm = messages
+                    stream = stream_chat_generator(st.session_state.openai_model, messages_for_llm)
+                    response = st.write_stream(stream)
+                except Exception:
+                    response = st.write_stream(_stream_text(FALLBACK_SUPPORT_MSG))
     st.session_state.messages.append({"role": "assistant", "content": response})

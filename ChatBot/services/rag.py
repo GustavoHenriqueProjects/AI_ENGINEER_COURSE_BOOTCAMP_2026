@@ -3,15 +3,7 @@
 import os
 import re
 import sys
-import unicodedata
 from pathlib import Path
-
-
-def _normalize_for_match(text: str) -> str:
-    """Remove acentos e colapsa espaços para comparação robusta."""
-    nfd = unicodedata.normalize("NFD", text.lower())
-    sem_acentos = "".join(c for c in nfd if unicodedata.category(c) != "Mn")
-    return " ".join(sem_acentos.split())
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_chroma import Chroma
@@ -84,49 +76,43 @@ def build_rag_index():
     return len(chunks)
 
 
-def _normalize_query_for_search(query: str) -> str:
-    """Para perguntas sobre nomes, usa frase que bate com o PDF e melhora o recall."""
+def _is_governance_question(query: str) -> bool:
+    """True se a pergunta é sobre composição da Diretoria ou Conselho."""
     q = query.strip().lower()
-    if "diretoria executiva" in q and any(w in q for w in ("nomes", "pessoas", "quais", "composição", "composta", "integrantes")):
-        return "A Diretoria Executiva é composta por"
-    if "conselho" in q and any(w in q for w in ("nomes", "pessoas", "quais", "composição", "formado", "integrantes")):
-        return "O Conselho de Administração é formado por"
-    person = _extract_person_name(query)
-    if person:
-        return f"{person} Brain4care"
-    return query.strip()
-
-
-def _is_diretoria_question(search_query: str) -> bool:
-    """Indica se a busca foi normalizada para Diretoria Executiva."""
-    return search_query == "A Diretoria Executiva é composta por"
-
-
-def _is_conselho_question(search_query: str) -> bool:
-    """Indica se a busca foi normalizada para Conselho de Administração."""
-    return search_query == "O Conselho de Administração é formado por"
-
-
-def _chunk_is_diretoria_only(txt: str) -> bool:
-    """True se o trecho contém Diretoria Executiva e a lista (não só Conselho)."""
-    return "Diretoria Executiva" in txt and "composta por" in txt
-
-
-def _chunk_has_conselho_list(txt: str) -> bool:
-    """True se o trecho contém a lista do Conselho de Administração."""
-    return "Conselho de Administração" in txt and "Marcos Bicudo" in txt
-
-
-def _chunk_is_conselho_only(txt: str) -> bool:
-    """True se o trecho é principalmente sobre Conselho (sem lista da Diretoria)."""
-    return _chunk_has_conselho_list(txt) and not (
-        "Diretoria Executiva" in txt and ("Plínio Targa" in txt or "Arnaldo Betta" in txt)
+    return ("diretoria" in q and any(w in q for w in ("composta", "composição", "nomes", "quem", "quais", "compõe"))) or (
+        "conselho" in q and any(w in q for w in ("formado", "composição", "nomes", "quem", "quais", "compõe", "administração"))
     )
 
 
-def _chunk_is_diretoria_only_no_conselho(txt: str) -> bool:
-    """True se o trecho tem só Diretoria, sem lista do Conselho."""
-    return _chunk_is_diretoria_only(txt) and not _chunk_has_conselho_list(txt)
+def is_composition_question(query: str) -> bool:
+    """True se a pergunta é sobre composição da Diretoria ou Conselho."""
+    return _is_governance_question(query)
+
+
+def is_person_question(query: str) -> bool:
+    """True se a pergunta é 'Quem é [nome]?'."""
+    return _extract_person_name(query) is not None
+
+
+def is_year_question(query: str) -> bool:
+    """True se a pergunta menciona um ano específico (ex: o que aconteceu em 2010?)."""
+    return _extract_year(query) is not None
+
+
+def _extract_person_name(query: str) -> str | None:
+    """Extrai nome de pessoa em perguntas como 'Quem é Marcos Bicudo?' ou 'Quem é o Plínio Targa?'."""
+    q = query.strip()
+    m = re.search(r"(?:quem\s+é|quem\s+foi)\s+(?:o\s+|a\s+)?([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]{2,50}?)(?:\s*\?|$)", q, re.IGNORECASE)
+    if m:
+        name = " ".join(m.group(1).strip().split())
+        if 3 <= len(name) <= 50:
+            return name
+    return None
+
+
+def _normalize_for_match(text: str) -> str:
+    """Colapsa espaços para comparação robusta."""
+    return " ".join((text or "").split()).lower()
 
 
 def _extract_year(query: str) -> str | None:
@@ -135,112 +121,114 @@ def _extract_year(query: str) -> str | None:
     return m.group(1) if m else None
 
 
-def _extract_person_name(query: str) -> str | None:
-    """Extrai nome de pessoa em perguntas como 'Quem é Luis Pascoal?' ou 'Quem é o Plínio Targa?'."""
-    q = query.strip()
-    m = re.search(r"(?:quem\s+é|quem\s+foi)\s+(?:o\s+|a\s+)?([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]{2,40}?)(?:\s*\?|$)", q, re.IGNORECASE)
-    if m:
-        name = m.group(1).strip()
-        if 3 <= len(name) <= 40 and not name.lower().startswith(("o ", "a ", "o que", "qual")):
-            return name
-    return None
+def _has_governance_section(txt: str) -> bool:
+    """True se o trecho contém Diretoria Executiva ou Conselho de Administração (normaliza espaços/caps)."""
+    if not txt:
+        return False
+    t = " ".join(txt.split()).lower()
+    return "diretoria executiva" in t or "conselho de administração" in t
 
 
-def _build_extra_queries(query: str) -> list[str]:
-    """Gera queries extras para busca múltipla e melhor recall."""
-    extra = []
-    year = _extract_year(query)
-    if year:
-        extra.append(f"{year} Brain4care")
-    person = _extract_person_name(query)
-    if person:
-        extra.append(f"{person} Brain4care")
-    extra.append(f"Brain4care {query.strip()[:80]}")
-    return extra
+def _merge_governance_chunks(chunks: list[str]) -> str:
+    """
+    Mescla chunks de governança cortados no meio da lista.
+    Deduplica: mesma pessoa (antes do —) fica só a linha mais completa.
+    """
+    person_best = {}
+    for txt in chunks:
+        for line in txt.split("\n"):
+            m = re.match(r"^(.+?)\s+—\s+(.+)$", line.strip())
+            if m:
+                person = " ".join(m.group(1).split())
+                cargo = m.group(2).strip()
+                full = f"{person} — {cargo}"
+                if person not in person_best or len(cargo) > len(person_best[person].split(" — ", 1)[-1]):
+                    person_best[person] = full
+    result = []
+    seen_h = set()
+    seen_p = set()
+    for txt in chunks:
+        for line in txt.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            m = re.match(r"^(.+?)\s+—\s+", line)
+            if m:
+                person = " ".join(m.group(1).split())
+                if person not in seen_p and person in person_best:
+                    seen_p.add(person)
+                    result.append(person_best[person])
+            elif line not in seen_h:
+                seen_h.add(line)
+                result.append(line)
+    return "\n".join(result)
 
 
 def get_relevant_context(query: str, top_k: int = RAG_TOP_K) -> str:
     """
     Busca trechos relevantes no índice RAG (Chroma) com a pergunta do usuário e retorna um único texto.
-    Deduplica e limita a top_k. Se o índice não existir ou estiver vazio, retorna "".
+    Deduplica e limita a top_k. Para perguntas de governança, mescla chunks cortados no meio da lista.
     """
     if not query or not query.strip():
         return ""
-    chroma_path = os.path.abspath(CHROMA_DIR)
-    if not os.path.isdir(chroma_path):
-        print(f"[RAG] chroma_db não encontrada: {chroma_path}\nRode: cd ChatBot && python build_rag.py", file=sys.stderr)
+    if not os.path.isdir(CHROMA_DIR):
         return ""
     try:
         embeddings = _get_embeddings()
         vectorstore = Chroma(
-            persist_directory=chroma_path,
+            persist_directory=CHROMA_DIR,
             embedding_function=embeddings,
             collection_name="empresa",
         )
-        k = min(RAG_CANDIDATES, 60)
-        search_query = _normalize_query_for_search(query)
-        person = _extract_person_name(query)
-        docs = list(vectorstore.similarity_search(search_query, k=k))
-        seen = {d.page_content.strip() for d in docs}
-        for eq in _build_extra_queries(query):
-            extra = vectorstore.similarity_search(eq, k=15)
-            for d in extra:
-                txt = d.page_content.strip()
-                if txt and txt not in seen:
-                    seen.add(txt)
-                    docs.append(d)
+        q = query.strip()
+        person = _extract_person_name(q)
+        year = _extract_year(q)
+
         if person:
+            all_data = vectorstore._collection.get(include=["documents"])
             person_norm = _normalize_for_match(person)
-            docs = [d for d in docs if person_norm in _normalize_for_match(d.page_content)]
-            if not docs:
-                all_data = vectorstore._collection.get(include=["documents"])
-                for txt in (all_data.get("documents") or []):
-                    if txt and person_norm in _normalize_for_match(txt):
-                        doc = type("Doc", (), {})()
-                        doc.page_content = txt
-                        docs.append(doc)
-                if not docs:
-                    print(f"[RAG] Nenhum trecho contém '{person}'. Índice em: {chroma_path}", file=sys.stderr)
-        year = _extract_year(query)
+            person_chunks = [
+                txt.strip()
+                for txt in (all_data.get("documents") or [])
+                if txt and person_norm in _normalize_for_match(txt)
+            ]
+            if person_chunks:
+                return "\n\n---\n\n".join(person_chunks[:top_k])
+
         if year:
-            docs_with_year = [d for d in docs if year in (d.page_content or "")]
-            if not docs_with_year:
-                all_data = vectorstore._collection.get(include=["documents"])
-                for txt in (all_data.get("documents") or []):
-                    if txt and year in txt:
-                        doc = type("Doc", (), {})()
-                        doc.page_content = txt
-                        docs.append(doc)
-            else:
-                docs = docs_with_year
+            all_data = vectorstore._collection.get(include=["documents"])
+            year_chunks = [
+                txt.strip()
+                for txt in (all_data.get("documents") or [])
+                if txt and year in txt
+            ]
+            if year_chunks:
+                return "\n\n---\n\n".join(year_chunks[:top_k])
+
+        k = min(RAG_CANDIDATES, 50)
+        docs = list(vectorstore.similarity_search(q, k=k))
+
+        if _is_governance_question(q):
+            all_data = vectorstore._collection.get(include=["documents"])
+            governance_chunks = [
+                txt.strip()
+                for txt in (all_data.get("documents") or [])
+                if _has_governance_section(txt)
+            ]
+            if governance_chunks:
+                return _merge_governance_chunks(governance_chunks)
+
         unique_contents = []
-        seen_list = set()
-        is_diretoria = _is_diretoria_question(search_query)
-        is_conselho = _is_conselho_question(search_query)
+        seen = set()
         for d in docs:
             txt = d.page_content.strip()
-            if not txt or txt in seen_list:
-                continue
-            if is_diretoria:
-                if _chunk_is_conselho_only(txt):
-                    continue
-                if not _chunk_is_diretoria_only(txt) and len(unique_contents) >= 5:
-                    continue
-            elif is_conselho:
-                if _chunk_is_diretoria_only_no_conselho(txt):
-                    continue
-                if not _chunk_has_conselho_list(txt) and len(unique_contents) >= 5:
-                    continue
-            elif year and year not in txt:
-                continue
-            seen_list.add(txt)
-            unique_contents.append(txt)
+            if txt and txt not in seen:
+                seen.add(txt)
+                unique_contents.append(txt)
             if len(unique_contents) >= top_k:
                 break
         if not unique_contents:
-            print(f"[RAG] Nenhum trecho relevante. Índice em: {chroma_path}\nRode: cd ChatBot && python build_rag.py", file=sys.stderr)
             return ""
         return "\n\n---\n\n".join(unique_contents)
-    except Exception as e:
-        print(f"[RAG] Erro: {e}", file=sys.stderr)
+    except Exception:
         return ""
