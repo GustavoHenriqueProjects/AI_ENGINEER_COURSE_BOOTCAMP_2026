@@ -21,9 +21,28 @@ from config import (
     RAG_CHUNK_OVERLAP,
 )
 
+# Cache: evita recriar embeddings e Chroma a cada pergunta (grande ganho de velocidade)
+_embeddings_cache = None
+_vectorstore_cache = None
+
 
 def _get_embeddings():
-    return OllamaEmbeddings(model=EMBEDDING_MODEL, base_url="http://localhost:11434")
+    global _embeddings_cache
+    if _embeddings_cache is None:
+        _embeddings_cache = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url="http://localhost:11434")
+    return _embeddings_cache
+
+
+def _get_vectorstore():
+    """Vectorstore em cache: uma única conexão com Chroma por sessão."""
+    global _vectorstore_cache
+    if _vectorstore_cache is None:
+        _vectorstore_cache = Chroma(
+            persist_directory=CHROMA_DIR,
+            embedding_function=_get_embeddings(),
+            collection_name="empresa",
+        )
+    return _vectorstore_cache
 
 
 def _get_splitter():
@@ -167,57 +186,54 @@ def _merge_governance_chunks(chunks: list[str]) -> str:
 def get_relevant_context(query: str, top_k: int = RAG_TOP_K) -> str:
     """
     Busca trechos relevantes no índice RAG (Chroma) com a pergunta do usuário e retorna um único texto.
-    Deduplica e limita a top_k. Para perguntas de governança, mescla chunks cortados no meio da lista.
+    Usa vectorstore em cache e similarity_search (evita carregar a coleção inteira = muito mais rápido).
     """
     if not query or not query.strip():
         return ""
     if not os.path.isdir(CHROMA_DIR):
         return ""
     try:
-        embeddings = _get_embeddings()
-        vectorstore = Chroma(
-            persist_directory=CHROMA_DIR,
-            embedding_function=embeddings,
-            collection_name="empresa",
-        )
+        vectorstore = _get_vectorstore()
         q = query.strip()
         person = _extract_person_name(q)
         year = _extract_year(q)
+        k = min(RAG_CANDIDATES, 30)
 
         if person:
-            all_data = vectorstore._collection.get(include=["documents"])
+            docs = vectorstore.similarity_search(person, k=k)
             person_norm = _normalize_for_match(person)
             person_chunks = [
-                txt.strip()
-                for txt in (all_data.get("documents") or [])
-                if txt and person_norm in _normalize_for_match(txt)
+                d.page_content.strip()
+                for d in docs
+                if d.page_content and person_norm in _normalize_for_match(d.page_content)
             ]
             if person_chunks:
                 return "\n\n---\n\n".join(person_chunks[:top_k])
 
         if year:
-            all_data = vectorstore._collection.get(include=["documents"])
+            docs = vectorstore.similarity_search(q, k=k)
             year_chunks = [
-                txt.strip()
-                for txt in (all_data.get("documents") or [])
-                if txt and year in txt
+                d.page_content.strip()
+                for d in docs
+                if d.page_content and year in d.page_content
             ]
             if year_chunks:
                 return "\n\n---\n\n".join(year_chunks[:top_k])
 
-        k = min(RAG_CANDIDATES, 50)
-        docs = list(vectorstore.similarity_search(q, k=k))
-
         if _is_governance_question(q):
-            all_data = vectorstore._collection.get(include=["documents"])
+            docs = vectorstore.similarity_search(
+                "diretoria executiva conselho de administração composição nomes cargos",
+                k=k,
+            )
             governance_chunks = [
-                txt.strip()
-                for txt in (all_data.get("documents") or [])
-                if _has_governance_section(txt)
+                d.page_content.strip()
+                for d in docs
+                if d.page_content and _has_governance_section(d.page_content)
             ]
             if governance_chunks:
                 return _merge_governance_chunks(governance_chunks)
 
+        docs = list(vectorstore.similarity_search(q, k=k))
         unique_contents = []
         seen = set()
         for d in docs:

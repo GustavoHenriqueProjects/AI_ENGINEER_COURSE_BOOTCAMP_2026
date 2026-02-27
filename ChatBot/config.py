@@ -53,8 +53,8 @@ BACKGROUND_PATH = os.path.join(ASSETS_DIR, "Background.webp")  # Imagem de fundo
 DATA_DIR = os.path.join(_BASE_DIR, "data", "pdf")  # Coloque aqui os PDFs da empresa
 CHROMA_DIR = os.path.join(_BASE_DIR, "chroma_db")  # Índice vetorial (persistido)
 EMBEDDING_MODEL = "nomic-embed-text"  # Rode: ollama run nomic-embed-text
-RAG_TOP_K = 20  # Mais trechos no contexto = mais chance de o trecho certo do PDF aparecer
-RAG_CANDIDATES = 50  # Candidatos na busca; depois deduplicamos e limitamos a TOP_K
+RAG_TOP_K = 10  # Menos trechos = prompt menor = resposta mais rápida (aumente se precisar de mais contexto)
+RAG_CANDIDATES = 25  # Candidatos na busca; menos = busca mais rápida
 # Chunking: tamanho maior evita cortar listas (ex.: diretoria executiva) no meio
 RAG_CHUNK_SIZE = 900
 RAG_CHUNK_OVERLAP = 200

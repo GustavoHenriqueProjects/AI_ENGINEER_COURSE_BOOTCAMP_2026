@@ -241,13 +241,12 @@ if user_message:
         elif (faq_answer := _get_faq_answer(user_message)):
             response = st.write_stream(_stream_text(faq_answer))
         else:
-            with st.spinner("Pensando ..."):
-                try:
-                    messages = [
-                        {"role": m["role"], "content": m["content"]}
-                        for m in st.session_state.messages
-                    ]
-                    # RAG: injeta contexto dos PDFs da empresa só nesta chamada
+            try:
+                messages = [
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ]
+                with st.spinner("Buscando nos PDFs..."):
                     context = get_relevant_context(user_message)
                     if context:
                         if is_composition_question(user_message):
@@ -285,8 +284,9 @@ if user_message:
                         messages_for_llm = messages[:-1] + [{"role": "user", "content": augmented}]
                     else:
                         messages_for_llm = messages
+                with st.spinner("Gerando resposta..."):
                     stream = stream_chat_generator(st.session_state.openai_model, messages_for_llm)
                     response = st.write_stream(stream)
-                except Exception:
-                    response = st.write_stream(_stream_text(FALLBACK_SUPPORT_MSG))
+            except Exception:
+                response = st.write_stream(_stream_text(FALLBACK_SUPPORT_MSG))
     st.session_state.messages.append({"role": "assistant", "content": response})
