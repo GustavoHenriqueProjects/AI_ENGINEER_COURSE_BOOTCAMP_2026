@@ -1,0 +1,98 @@
+TYPE=INSTITUTIONAL | SECTION=COMPANY_OVERVIEW | THEME=ABOUT_THE_COMPANY | COUNTRY=GLOBAL
+Brain4care is a healthtech company that develops innovative technology for non-invasive monitoring of intracranial compliance variations. The company’s purpose is to push the boundaries of medicine to transform lives, bringing accessible, high-impact technology to healthcare institutions in Brazil and worldwide. Official website: https://brain4.care
+
+TYPE=PRESENTATION | SECTION=ASSISTANT_IDENTITY | THEME=IDENTITY | COUNTRY=GLOBAL
+My name is Fernanda. I am an AI agent for Brain4care. I am here to provide information, answer questions, and help with questions about the company’s services.
+
+TYPE=PRESENTATION | SECTION=ASSISTANT_IDENTITY | THEME=IDENTITY_FAQ | COUNTRY=GLOBAL
+Who are you? I am Fernanda, an artificial intelligence that works for Brain4care and is here to help you.
+
+TYPE=PRESENTATION | SECTION=ASSISTANT_IDENTITY | THEME=IDENTITY_FAQ | COUNTRY=GLOBAL
+Which company are you from? I am from Brain4care.
+
+TYPE=GREETING | SECTION=NATURAL_RESPONSES | THEME=GREETING | COUNTRY=GLOBAL
+Hi, how are you? I am well, thank you! How can I help?
+
+TYPE=GREETING | SECTION=NATURAL_RESPONSES | THEME=GREETING | COUNTRY=GLOBAL
+Good morning! Have a great day!
+
+TYPE=GREETING | SECTION=NATURAL_RESPONSES | THEME=GREETING | COUNTRY=GLOBAL
+Good afternoon! How can I help?
+
+TYPE=GREETING | SECTION=NATURAL_RESPONSES | THEME=GREETING | COUNTRY=GLOBAL
+Good evening! Have a great night!
+
+TYPE=TECHNOLOGY | SECTION=CLINICAL_APPLICATION | THEME=PRODUCT | COUNTRY=GLOBAL
+Brain4care technology performs non-invasive monitoring of intracranial compliance. It provides data that support neurological diagnosis, enable predictive medical decisions, increase patient safety, and improve clinical outcomes. It is used by neurologists and neurosurgeons.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2007 | COUNTRY=BRAZIL
+First observation of expansion and contraction of the cranial vault, the discovery that led to the company’s scientific method.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2008 | COUNTRY=BRAZIL
+Start of scientific research on Brain4care technology.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2009 | COUNTRY=BRAZIL
+First clinical tests in humans using a minimally invasive sensor.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2010 | COUNTRY=BRAZIL
+Emergence of the concept of a fully non-invasive sensor for intracranial monitoring.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2011 | COUNTRY=BRAZIL
+Development of Brain4care’s first functional non-invasive sensor.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2012 | COUNTRY=BRAZIL
+Publication in Acta Neurochirurgica of a foundational scientific paper challenging the Monro-Kellie doctrine.
+
+TYPE=HISTORY | SECTION=ORIGINS_AND_FOUNDATION | THEME=HISTORY | YEAR=2014 | COUNTRY=BRAZIL
+Official founding of Brain4care.
+
+TYPE=HISTORY | SECTION=EXPANSION_AND_MILESTONES | THEME=HISTORY | YEAR=2016 | COUNTRY=GLOBAL
+Brain4care receives strategic investment from angel investors.
+
+TYPE=HISTORY | SECTION=EXPANSION_AND_MILESTONES | THEME=HISTORY | YEAR=2017 | COUNTRY=GLOBAL
+Expansion milestones: Singularity University program, worldwide launch of the wireless sensor, ANVISA certification for the wired sensor, and start of research at Stanford. First customer: Hospital Sírio-Libanês.
+
+TYPE=HISTORY | SECTION=EXPANSION_AND_MILESTONES | THEME=HISTORY | YEAR=2018 | COUNTRY=USA
+First technical and institutional visit to NASA.
+
+TYPE=HISTORY | SECTION=EXPANSION_AND_MILESTONES | THEME=HISTORY | YEAR=2019 | COUNTRY=GLOBAL
+ANVISA certification for the wireless sensor, commercial launch of the solution, and launch of the global Brain4care brand.
+
+TYPE=RECOGNITION | SECTION=AWARDS_AND_CERTIFICATIONS | THEME=REPUTATION | YEAR=2021 | COUNTRY=GLOBAL
+FDA (Food and Drug Administration) certification in the United States and Dasa Medical Innovation Award in the Healthtech category.
+
+TYPE=RECOGNITION | SECTION=AWARDS_AND_CERTIFICATIONS | THEME=REPUTATION | YEAR=2022 | COUNTRY=GLOBAL
+International Startups of the Future Award.
+
+TYPE=RECOGNITION | SECTION=AWARDS_AND_CERTIFICATIONS | THEME=REPUTATION | YEAR=2023 | COUNTRY=GLOBAL
+Design for a Better World Award in the Product Design category.
+
+TYPE=RECOGNITION | SECTION=AWARDS_AND_CERTIFICATIONS | THEME=REPUTATION | YEAR=2024 | COUNTRY=GLOBAL
+iF Design Award in the Product Design category for Medicine and Health.
+
+TYPE=RECOGNITION | SECTION=AWARDS_AND_CERTIFICATIONS | THEME=REPUTATION | YEAR=2025 | COUNTRY=GLOBAL
+Named a Technology Pioneer by the World Economic Forum.
+
+TYPE=GOVERNANCE | SECTION=EXECUTIVE_LEADERSHIP | THEME=LEADERSHIP | COUNTRY=GLOBAL
+Executive leadership: Plínio Targa (CEO), Arnaldo Betta (COO), Pedro Maffei (CFO), Gustavo Frigieri (Chief Scientific Officer and CS), Renato Abe (Marketing), Rodrigo Andrade (Innovation and Technology), Cláudio Menegusso (President, North America), and Carlos Bremer (Strategic Advisor, USA).
+
+TYPE=GOVERNANCE | SECTION=BOARD_OF_DIRECTORS | THEME=LEADERSHIP | COUNTRY=BRAZIL
+Board of Directors: Marcos Bicudo (Chair), Luis Pascoal, Glaucius Oliva, Plínio Targa, Carlos Bremer, Rodrigo Andrade, and Yvonne Mascarenhas.
+
+TYPE=PRESENCE | SECTION=HOSPITALS_AND_RESEARCH | THEME=MARKET | COUNTRY=GLOBAL
+Brain4care is in clinical use in more than 103 hospitals and clinics, and in research use in more than 20 leading healthcare institutions.
+
+TYPE=CONTACT | SECTION=ADDRESSES | THEME=ALL_ADDRESSES_LIST | COUNTRY=GLOBAL
+Official Brain4care addresses and contacts across three locations (offices for support, technical visits, and institutional contact). In Brazil, São Carlos (SP): +55 (16) 3501-4020 — Av. Bruno Ruggiero Filho, 971, Parque Santa Felícia Jardim, ZIP 13562-420. São Paulo (SP): +55 (11) 4324-5305 — Av. Queiroz Filho, 1560, Vila Hamburguesa, ZIP 05319-000. In the United States, Atlanta, Georgia area (Johns Creek): +1 (424) 888-2942 — 6470 E Johns Crossing, Suite 160, Office 114, GA 30097. These are Brain4care’s three official addresses: two in Brazil and one in the USA.
+
+TYPE=CONTACT | SECTION=ADDRESSES | THEME=CONTACT | COUNTRY=BRAZIL | CITY=SAO_CARLOS
+Phone: +55 (16) 3501-4020
+Address: Av. Bruno Ruggiero Filho, 971 — Parque Santa Felícia Jardim, São Carlos — SP, 13562-420.
+
+TYPE=CONTACT | SECTION=ADDRESSES | THEME=CONTACT | COUNTRY=BRAZIL | CITY=SAO_PAULO
+Phone: +55 (11) 4324-5305
+Address: Av. Queiroz Filho, 1560 — Vila Hamburguesa, São Paulo — SP, 05319-000.
+
+TYPE=CONTACT | SECTION=ADDRESSES | THEME=CONTACT | COUNTRY=USA | CITY=ATLANTA
+Phone: +1 (424) 888-2942
+Address: 6470 E Johns Crossing, Suite 160, Office 114, Johns Creek, GA 30097.

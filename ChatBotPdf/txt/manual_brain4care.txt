@@ -1,0 +1,98 @@
+TIPO=INSTITUCIONAL | SECAO=VISAO_GERAL | TEMA=SOBRE_A_EMPRESA | PAÍS=GLOBAL
+A Brain4care é uma healthtech que desenvolve uma tecnologia inovadora para o monitoramento não invasivo das variações da complacência intracraniana. O propósito da empresa é desafiar os limites da medicina para transformar vidas, levando tecnologia acessível e de alto impacto para instituições de saúde no Brasil e no mundo. Site oficial: https://brain4.care
+
+TIPO=APRESENTACAO | SECAO=IDENTIDADE_ASSISTENTE | TEMA=IDENTIDADE | PAÍS=GLOBAL
+Meu nome é Fernanda. Sou uma agente de inteligência artificial da empresa Brain4care. Estou aqui para ajudar com informações, responder perguntas e resolver dúvidas sobre os serviços da empresa.
+
+TIPO=APRESENTACAO | SECAO=IDENTIDADE_ASSISTENTE | TEMA=FAQ_IDENTIDADE | PAÍS=GLOBAL
+Quem é você? Sou Fernanda, uma inteligência artificial que trabalha para a Brain4care e está disponível para ajudar você.
+
+TIPO=APRESENTACAO | SECAO=IDENTIDADE_ASSISTENTE | TEMA=FAQ_IDENTIDADE | PAÍS=GLOBAL
+De qual empresa você é? Sou da Brain4care.
+
+TIPO=SAUDACAO | SECAO=RESPOSTAS_NATURAIS | TEMA=SAUDACAO | PAÍS=GLOBAL
+Oi, tudo bem? Estou bem, obrigado! Como posso ajudar?
+
+TIPO=SAUDACAO | SECAO=RESPOSTAS_NATURAIS | TEMA=SAUDACAO | PAÍS=GLOBAL
+Bom dia! Que tenha um ótimo dia!
+
+TIPO=SAUDACAO | SECAO=RESPOSTAS_NATURAIS | TEMA=SAUDACAO | PAÍS=GLOBAL
+Boa tarde! Como posso ajudar?
+
+TIPO=SAUDACAO | SECAO=RESPOSTAS_NATURAIS | TEMA=SAUDACAO | PAÍS=GLOBAL
+Boa noite! Que você tenha uma ótima noite!
+
+TIPO=TECNOLOGIA | SECAO=APLICACAO_CLINICA | TEMA=PRODUTO | PAÍS=GLOBAL
+A tecnologia Brain4care realiza o monitoramento não invasivo da complacência intracraniana. Ela fornece dados que qualificam o diagnóstico neurológico, permitem condutas médicas preditivas, aumentam a segurança do paciente e melhoram os desfechos clínicos. É utilizada por neurologistas e neurocirurgiões.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2007 | PAÍS=BRASIL
+Primeira observação da expansão e contração da caixa craniana, descoberta que deu origem ao método científico da empresa.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2008 | PAÍS=BRASIL
+Início das pesquisas científicas sobre a tecnologia Brain4care.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2009 | PAÍS=BRASIL
+Primeiros testes clínicos em humanos realizados com sensor minimamente invasivo.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2010 | PAÍS=BRASIL
+Surgimento do conceito do sensor totalmente não invasivo para monitoramento intracraniano.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2011 | PAÍS=BRASIL
+Desenvolvimento do primeiro sensor não invasivo funcional da Brain4care.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2012 | PAÍS=BRASIL
+Publicação na Acta Neurochirurgica de artigo científico fundamental que questiona a doutrina de Monro-Kellie.
+
+TIPO=HISTORIA | SECAO=ORIGEM_E_FUNDACAO | TEMA=HISTORIA | ANO=2014 | PAÍS=BRASIL
+Fundação oficial da empresa Brain4care.
+
+TIPO=HISTORIA | SECAO=EXPANSAO_E_MARCOS | TEMA=HISTORIA | ANO=2016 | PAÍS=GLOBAL
+A Brain4care recebe investimento estratégico de investidores-anjo.
+
+TIPO=HISTORIA | SECAO=EXPANSAO_E_MARCOS | TEMA=HISTORIA | ANO=2017 | PAÍS=GLOBAL
+Marcos de expansão: Programa da Singularity University, apresentação mundial do sensor sem fio, certificação ANVISA para o sensor com fio e início de pesquisa em Stanford. Primeiro cliente: Hospital Sírio-Libanês.
+
+TIPO=HISTORIA | SECAO=EXPANSAO_E_MARCOS | TEMA=HISTORIA | ANO=2018 | PAÍS=EUA
+Realização da primeira visita técnica e institucional à NASA.
+
+TIPO=HISTORIA | SECAO=EXPANSAO_E_MARCOS | TEMA=HISTORIA | ANO=2019 | PAÍS=GLOBAL
+Certificação ANVISA para o sensor sem fio, lançamento comercial da solução e lançamento da marca global Brain4care.
+
+TIPO=RECONHECIMENTOS | SECAO=PREMIOS_E_CERTIFICACOES | TEMA=REPUTACAO | ANO=2021 | PAÍS=GLOBAL
+Certificação pelo FDA (Food and Drug Administration) nos EUA e conquista do Prêmio Dasa de Inovação Médica na categoria Healthtech.
+
+TIPO=RECONHECIMENTOS | SECAO=PREMIOS_E_CERTIFICACOES | TEMA=REPUTACAO | ANO=2022 | PAÍS=GLOBAL
+Conquista do prêmio internacional Startups of the Future Award.
+
+TIPO=RECONHECIMENTOS | SECAO=PREMIOS_E_CERTIFICACOES | TEMA=REPUTACAO | ANO=2023 | PAÍS=GLOBAL
+Conquista do prêmio Design for a Better World Award na categoria Product Design.
+
+TIPO=RECONHECIMENTOS | SECAO=PREMIOS_E_CERTIFICACOES | TEMA=REPUTACAO | ANO=2024 | PAÍS=GLOBAL
+Conquista do prêmio iF Design Award na categoria Product Design em Medicina e Saúde.
+
+TIPO=RECONHECIMENTOS | SECAO=PREMIOS_E_CERTIFICACOES | TEMA=REPUTACAO | ANO=2025 | PAÍS=GLOBAL
+Nomeação como Technology Pioneer pelo World Economic Forum (Fórum Econômico Mundial).
+
+TIPO=GOVERNANCA | SECAO=DIRETORIA_EXECUTIVA | TEMA=LIDERANCA | PAÍS=GLOBAL
+Composição da Diretoria Executiva: Plínio Targa (CEO), Arnaldo Betta (COO), Pedro Maffei (CFO), Gustavo Frigieri (Diretor Científico e CS), Renato Abe (Marketing), Rodrigo Andrade (Inovação e Tecnologia), Cláudio Menegusso (Presidente América do Norte) e Carlos Bremer (Conselheiro Estratégico EUA).
+
+TIPO=GOVERNANCA | SECAO=CONSELHO_ADMINISTRACAO | TEMA=LIDERANCA | PAÍS=BRASIL
+Composição do Conselho de Administração: Marcos Bicudo (Presidente), Luis Pascoal, Glaucius Oliva, Plínio Targa, Carlos Bremer, Rodrigo Andrade e Yvonne Mascarenhas.
+
+TIPO=PRESENCA | SECAO=HOSPITAIS_E_PESQUISA | TEMA=MERCADO | PAÍS=GLOBAL
+A Brain4care está em uso clínico em mais de 103 hospitais e clínicas, e em uso em pesquisa em mais de 20 instituições de referência na área da saúde.
+
+TIPO=CONTATO | SECAO=ENDERECOS | TEMA=LISTA_TODOS_ENDERECOS | PAÍS=GLOBAL
+Endereços e contactos oficiais da empresa Brain4care em três localizações (escritórios para suporte, visitas técnicas e contacto institucional). No Brasil, unidade em São Carlos (SP): +55 (16) 3501-4020 — Av. Bruno Ruggiero Filho, 971, Parque Santa Felícia Jardim, CEP 13562-420. Unidade em São Paulo (SP): +55 (11) 4324-5305 — Av. Queiroz Filho, 1560, Vila Hamburguesa, CEP 05319-000. Nos Estados Unidos, unidade na região de Atlanta, Georgia (Johns Creek): +1 (424) 888-2942 — 6470 E Johns Crossing, Suite 160, Office 114, GA 30097. São três endereços oficiais da Brain4care: dois no Brasil e um nos EUA.
+
+TIPO=CONTATO | SECAO=ENDERECOS | TEMA=CONTATO | PAÍS=BRASIL | CIDADE=SAO_CARLOS
+Telefone: +55 (16) 3501-4020
+Endereço: Av. Bruno Ruggiero Filho, 971 — Parque Santa Felícia Jardim, São Carlos — SP, 13562-420.
+
+TIPO=CONTATO | SECAO=ENDERECOS | TEMA=CONTATO | PAÍS=BRASIL | CIDADE=SAO_PAULO
+Telefone: +55 (11) 4324-5305
+Endereço: Av. Queiroz Filho, 1560 — Vila Hamburguesa, São Paulo — SP, 05319-000.
+
+TIPO=CONTATO | SECAO=ENDERECOS | TEMA=CONTATO | PAÍS=EUA | CIDADE=ATLANTA
+Telefone: +1 (424) 888-2942
+Endereço: 6470 E Johns Crossing, Suite 160, Office 114, Johns Creek, GA 30097.
