@@ -73,24 +73,6 @@ def _build_ollama_payload(request: ChatRequest) -> dict:
     }
 
 
-async def get_chat_completion(request: ChatRequest, ollama_url: str) -> str:
-    """Executa chamada sem stream e retorna o texto completo."""
-    payload = _build_ollama_payload(
-        ChatRequest(
-            model=request.model,
-            messages=request.messages,
-            stream=False,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
-        )
-    )
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        response = await client.post(ollama_url, json=payload)
-        response.raise_for_status()
-        data = response.json()
-        return data.get("message", {}).get("content", "")
-
-
 def stream_chat_response(
     request: ChatRequest,
     ollama_url: str,

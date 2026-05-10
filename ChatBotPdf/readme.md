@@ -33,6 +33,9 @@ Na raiz do repositório:
 
 ```bash
 source chatbot_pdf/bin/activate
+ OR
+.\chatbot_pdf\Scripts\Activate.ps1
+
 pip install -r requirements.txt
 ```
 
@@ -49,7 +52,7 @@ python build_rag.py
 
 O script **apaga** o diretório configurado em `CHROMA_PERSIST_DIR` e grava um Chroma novo a partir de `RAG_KNOWLEDGE_FILE` (padrão: `txt/manual_brain4care.txt`). Sem esse passo, `/rag` responde que o índice está ausente.
 
-Variáveis relevantes (ver `[api/config.py](api/config.py)`): `CHROMA_PERSIST_DIR`, `EMBEDDING_MODEL`, `RAG_KNOWLEDGE_FILE`, `RAG_METADATA_KEY_LANG` (`pt` ou `en` — nomes das chaves de metadados no Chroma; reindexar ao mudar).
+Variáveis relevantes (ver `[api/config.py](api/config.py)`): `CHROMA_PERSIST_DIR`, `EMBEDDING_MODEL`, `RAG_KNOWLEDGE_FILE`, `RAG_METADATA_KEY_LANG` (`pt` ou `en` — nomes das chaves de metadados no Chroma; reindexar ao mudar), e para o `/rag`: **`RAG_K`**, **`RAG_CONTEXT_MAX_CHARS`**, **`RAG_TEMPERATURE`** (Ollama; recomendado **0,0–0,3** para respostas fiéis ao manual — padrão **0,2**). O body do `/rag` pode enviar `top_k` ou `temperature` para sobrescrever esses valores por requisição.
 
 ### `EMBEDDING_MODEL` (embeddings do RAG)
 
@@ -64,16 +67,19 @@ Nesses modelos E5 o backend aplica automaticamente os prefixos `query:` / `passa
 
 ## Rodar
 
-**Backend** (outro terminal, com o venv ativo):
+**Backend** (outro terminal, com o venv ativo, na pasta `ChatBotPdf/`):
 
 ```bash
-uvicorn api.api:app --reload --port 8000
+uvicorn api.api:app --reload --port 8000 --reload-dir api
 ```
+
+Use `--reload-dir api` para o watcher **não** incluir o venv (`chatbot_pdf/Lib/site-packages/…`). Caso contrário, arquivos do PyTorch podem ser detectados como “alterados” e o servidor reinicia em loop (`WatchFiles detected changes in … torch …`).
 
 **Ollama** — instale um modelo, por exemplo:
 
 ```bash
 ollama pull llama3.2:1b
+ollama pull bge-m3
 ```
 
 **Frontend:**
@@ -92,11 +98,14 @@ O app conversa com `http://localhost:8000` (ajuste no Streamlit se mudar a porta
 
 ### Testar o Chroma no terminal
 
-Na raiz do repositório, com o venv ativo. Use **heredoc** (assim o Python pode ter várias linhas; `doc.page_content` é o atributo correto do LangChain):
+Na pasta **`ChatBotPdf/`** (onde está o pacote `api/`), com o venv ativo. `doc.page_content` é o atributo correto do LangChain.
+
+**Linux / macOS (bash)** — heredoc:
 
 ```bash
 source chatbot_pdf/bin/activate
 python <<'PY'
+from api.config import RAG_CONTEXT_MAX_CHARS, RAG_K
 from api.rag_index import chroma_index_exists, open_chroma_vectorstore
 
 if not chroma_index_exists():
@@ -104,10 +113,32 @@ if not chroma_index_exists():
 
 db = open_chroma_vectorstore()
 q = "Qual o endereço em São Paulo?"
-for doc, score in db.similarity_search_with_score(q, k=4):
+for doc, score in db.similarity_search_with_score(q, k=RAG_K):
     print(score, doc.metadata)
-    print((doc.page_content or "")[:200], "\n")
+    body = doc.page_content or ""
+    print((body[:RAG_CONTEXT_MAX_CHARS] if RAG_CONTEXT_MAX_CHARS > 0 else body), "\n")
 PY
 ```
 
-`k=4` são os quatro trechos mais parecidos com a pergunta; `[:200]` limita o texto impresso a 200 caracteres.
+**Windows (PowerShell)** — o PowerShell **não** suporta `<<'PY'`; use *here-string* enviado ao Python:
+
+```powershell
+cd ChatBotPdf   # se ainda não estiver nesta pasta
+.\chatbot_pdf\Scripts\Activate.ps1
+@'
+from api.config import RAG_CONTEXT_MAX_CHARS, RAG_K
+from api.rag_index import chroma_index_exists, open_chroma_vectorstore
+
+if not chroma_index_exists():
+    raise SystemExit("Sem índice: rode python build_rag.py")
+
+db = open_chroma_vectorstore()
+q = "Qual o endereço em São Paulo?"
+for doc, score in db.similarity_search_with_score(q, k=RAG_K):
+    print(score, doc.metadata)
+    body = doc.page_content or ""
+    print((body[:RAG_CONTEXT_MAX_CHARS] if RAG_CONTEXT_MAX_CHARS > 0 else body), "\n")
+'@ | python -
+```
+
+Os valores vêm de **`RAG_K`** e **`RAG_CONTEXT_MAX_CHARS`** em `api/config.py` (ou `.env`).

@@ -1,5 +1,7 @@
-import streamlit as st
+import html
+
 import httpx
+import streamlit as st
 
 # Configuração da página Streamlit
 st.set_page_config(page_title="Streamlit Chat", page_icon=":smiley:")
@@ -85,7 +87,10 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("Digite sua pergunta..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(
+            f'<div style="white-space: pre-wrap;">{html.escape(prompt)}</div>',
+            unsafe_allow_html=True,
+        )
 
     with st.chat_message("assistant"):
         try:
@@ -106,8 +111,6 @@ if prompt := st.chat_input("Digite sua pergunta..."):
                 payload = {
                     "query": prompt,
                     "model": model_name,
-                    "temperature": 0.2,
-                    "max_tokens": 400,
                     "use_rag": use_rag,
                     "messages": chat_history,
                 }
@@ -116,15 +119,21 @@ if prompt := st.chat_input("Digite sua pergunta..."):
                     response.raise_for_status()
 
                     response_placeholder = st.empty()
-                    for line in response.iter_lines():
-                        if line:
-                            text_line = line.decode("utf-8") if isinstance(line, bytes) else str(line)
-                            response_text += text_line
-                            response_placeholder.markdown(response_text)
+                    # O /rag devolve texto em streaming (sem newline por chunk): iter_lines() junta mal;
+                    # st.markdown() trata _ e * como Markdown e estraga endereços / metadados.
+                    for chunk in response.iter_text():
+                        if chunk:
+                            response_text += chunk
+                            response_placeholder.markdown(
+                                f'<div style="white-space: pre-wrap;">{html.escape(response_text)}</div>',
+                                unsafe_allow_html=True,
+                            )
 
         except httpx.ConnectError:
             st.error("❌ Erro: backend FastAPI não está rodando em http://localhost:8000")
-            st.info("Inicie o backend: `uvicorn api.api:app --reload --port 8000`")
+            st.info(
+                "Inicie o backend: `uvicorn api.api:app --reload --port 8000 --reload-dir api`"
+            )
         except httpx.ReadTimeout:
             st.error("❌ Timeout: A resposta levou muito tempo. Tente novamente.")
         except Exception as e:

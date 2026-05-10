@@ -16,11 +16,9 @@ import logging
 from api.config import (
     ASSISTANT_NAME,
     BRAND_NAME,
-    RAG_MMR_FETCH_K,
-    RAG_MMR_K,
-    RAG_MMR_LAMBDA,
-    RAG_RETRIEVER_SEARCH_TYPE,
-    RAG_SIMILARITY_K,
+    RAG_CONTEXT_MAX_CHARS,
+    RAG_K,
+    RAG_TEMPERATURE,
 )
 from api.rag_index import chroma_index_exists, open_chroma_vectorstore
 from api.schemas import ChatRequest, RagRequest
@@ -31,7 +29,6 @@ from api.services.chat_service import (
 
 logger = logging.getLogger(__name__)
 
-# Mensagem do usuário: pergunta + contexto recuperado (placeholders explícitos).
 RAG_USER_MESSAGE_TEMPLATE = (
     "Essa é a pergunta do usuário:\n"
     "{question}\n\n"
@@ -63,40 +60,9 @@ def _chroma_where(user_filter: dict[str, str] | None) -> dict[str, Any] | None:
     return {"$and": [{k: v} for k, v in norm.items()]}
 
 
-def _merged_retrieval_context(docs: list) -> str:
-    """Junta vários trechos recuperados, sem repetir o mesmo texto."""
-    if not docs:
-        return ""
-    parts: list[str] = []
-    seen: set[str] = set()
-    for d in docs:
-        t = (d.page_content or "").strip()
-        if t and t not in seen:
-            seen.add(t)
-            parts.append(t)
-    return "\n\n---\n\n".join(parts)
-
-
-def _build_chroma_retriever(db, k_similarity: int):
-    """MMR maximiza diversidade entre trechos; para perguntas pontuais use similarity (padrão)."""
-    mode = (RAG_RETRIEVER_SEARCH_TYPE or "similarity").strip().lower()
-    k_sim = max(1, min(k_similarity, 40))
-    if mode == "mmr":
-        k_mmr = max(1, min(RAG_MMR_K, 40))
-        fetch_k = max(RAG_MMR_FETCH_K, k_mmr)
-        return db.as_retriever(
-            search_type="mmr",
-            search_kwargs={
-                "k": k_mmr,
-                "fetch_k": min(fetch_k, 60),
-                "lambda_mult": RAG_MMR_LAMBDA,
-            },
-        )
-    return db.as_retriever(
-        search_type="similarity",
-        search_kwargs={"k": k_sim},
-    )
-
+def _retrieve_documents(db, query: str, k: int, where: dict[str, Any] | None) -> list:
+    pairs = db.similarity_search_with_score(query, k=k, filter=where)
+    return [doc for doc, _score in pairs]
 
 async def handle_rag(
     request: RagRequest,
@@ -111,42 +77,41 @@ async def handle_rag(
 
         db = open_chroma_vectorstore()
 
-        k_similarity = (
-            int(request.top_k) if request.top_k is not None else RAG_SIMILARITY_K
-        )
-        k_similarity = max(1, min(k_similarity, 40))
-
+        k = int(request.top_k) if request.top_k is not None else RAG_K
+        k = max(1, min(k, 40))
         where = _chroma_where(request.metadata_filter)
-        if where is not None:
-            if (RAG_RETRIEVER_SEARCH_TYPE or "similarity").strip().lower() == "mmr":
-                logger.warning(
-                    "[RAG] metadata_filter ativo: usando busca por similaridade (sem MMR)."
-                )
-            retrieved = db.similarity_search(
-                request.query,
-                k=k_similarity,
-                filter=where,
-            )
-        else:
-            retriever = _build_chroma_retriever(db, k_similarity)
-            retrieved = retriever.invoke(request.query)
 
-        context_text = _merged_retrieval_context(retrieved)
+        retrieved = _retrieve_documents(db, request.query, k, where)
 
+        chunks: list[str] = []
+        for doc in retrieved:
+            text = (doc.page_content or "").strip()
+            if not text:
+                continue
+            if RAG_CONTEXT_MAX_CHARS > 0:
+                text = text[:RAG_CONTEXT_MAX_CHARS]
+            chunks.append(text)
+        context_text = "\n\n---\n\n".join(chunks)
         if not context_text.strip():
             context_text = (
                 "(Nenhum trecho do manual foi recuperado para esta pergunta; "
                 "responda de acordo com as regras quando não houver contexto.)"
             )
 
+        _log_preview = (context_text[:400] + "…") if len(context_text) > 400 else context_text
+        logger.info(
+            "[RAG] retrieval query=%r k=%s n_docs=%s context_chars=%s "
+            "(log só: primeiros 400 chars)=%r",
+            request.query.strip(),
+            k,
+            len(retrieved),
+            len(context_text),
+            _log_preview,
+        )
+
         system_prompt = (
             f"Você é a {ASSISTANT_NAME}, assistente virtual da {BRAND_NAME}. "
-            "1. Saudações (olá, boa noite, etc) devem ser respondidas de forma amigável. "
-            "2. Para dúvidas, use EXCLUSIVAMENTE o contexto fornecido, salvo saudação, "
-            "conta matemática simples ou dúvida em que o conhecimento geral seja adequado. "
-            "3. Se a pergunta não for saudação e não estiver no contexto, diga que não possui a informação. "
-            "4. Quando o contexto trouxer várias unidades, cidades, datas ou itens relacionados à pergunta, "
-            "cite todos de forma organizada, sem omitir referências presentes no texto."
+            "1. Saudações (olá, boa noite, etc.) devem ser respondidas de forma amigável. "
         )
 
         user_content = RAG_USER_MESSAGE_TEMPLATE.format(
@@ -158,12 +123,20 @@ async def handle_rag(
             {"role": "user", "content": user_content},
         ]
 
+        eff_temperature = (
+            request.temperature if request.temperature is not None else RAG_TEMPERATURE
+        )
         llm_request = ChatRequest(
             model=request.model,
             messages=messages,
             stream=True,
-            temperature=0.0 if request.use_rag else request.temperature,
-            max_tokens=request.max_tokens,
+            temperature=eff_temperature,
+        )
+
+        logger.info(
+            "[RAG] ollama model=%s temperature=%s (sem limite max_tokens / num_predict)",
+            llm_request.model,
+            llm_request.temperature,
         )
 
         return stream_llm_response(
@@ -182,8 +155,11 @@ async def handle_rag(
                     model=request.model,
                     messages=[{"role": "user", "content": request.query}],
                     stream=True,
-                    temperature=request.temperature,
-                    max_tokens=request.max_tokens,
+                    temperature=(
+                        request.temperature
+                        if request.temperature is not None
+                        else RAG_TEMPERATURE
+                    ),
                 ),
                 ollama_url,
                 openai_api_key,
